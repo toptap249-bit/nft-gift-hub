@@ -1,0 +1,29 @@
+{
+  "name": "nft-gift-hub-backend",
+  "version": "1.1.0",
+  "description": "NFT Gift Hub Telegram Mini App backend + Telegram bot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@ngrok/ngrok": "^1.7.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "keywords": [
+    "nft",
+    "telegram",
+    "mini-app",
+    "bot"
+  ],
+  "author": "",
+  "license": "MIT"
+}

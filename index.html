@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>NFT Gift Hub</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --bg-0: #07060f;
+  --bg-1: #110d2a;
+  --card: rgba(255,255,255,.04);
+  --card-hi: rgba(255,255,255,.07);
+  --line: rgba(255,255,255,.08);
+  --line-hi: rgba(255,255,255,.16);
+  --text: #ffffff;
+  --hint: #8a8fa3;
+  --accent: #8b6cff;
+  --accent-2: #ff5dcd;
+  --gold: #ffcb45;
+  --green: #2ee08c;
+  --red: #ff5269;
+  --blue: #38bdf8;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
+  background: var(--bg-0);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+}
+
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(1100px 700px at 5% -10%, rgba(139,108,255,.22), transparent 65%),
+    radial-gradient(900px 600px at 110% 0%, rgba(255,93,205,.18), transparent 60%),
+    radial-gradient(700px 600px at 50% 110%, rgba(56,189,248,.14), transparent 60%),
+    linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
+}
+
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: -1;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,.7), transparent 50%),
+    radial-gradient(1px 1px at 75% 12%, rgba(255,255,255,.5), transparent 50%),
+    radial-gradient(1px 1px at 88% 68%, rgba(255,255,255,.6), transparent 50%),
+    radial-gradient(1.5px 1.5px at 12% 80%, rgba(255,255,255,.5), transparent 50%),
+    radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,.4), transparent 50%),
+    radial-gradient(1px 1px at 35% 92%, rgba(255,255,255,.4), transparent 50%);
+  pointer-events: none;
+  animation: twinkle 8s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity:.4 } to { opacity:.9 } }
+
+#app { display:flex; flex-direction:column; min-height:100vh; }
+#content { flex:1; padding: 6px 14px calc(96px + var(--safe-bottom)); }
+.tab { display:none; }
+.tab.active { display:block; animation: fade .25s ease; }
+@keyframes fade { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  position: sticky; top: 0; z-index: 30;
+  display:flex; align-items:center; gap: 10px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(7,6,15,.85), rgba(7,6,15,.55));
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-bottom: 1px solid var(--line);
+}
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  font-weight: 700; font-size: 16px; flex-shrink:0;
+  border: 2px solid rgba(255,255,255,.15);
+}
+.user-info { flex:1; min-width:0; }
+.user-name { font-size: 14px; font-weight: 600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-meta { font-size: 11px; color: var(--hint); display:flex; align-items:center; gap:8px; }
+.lvl-pill {
+  background: linear-gradient(135deg, rgba(139,108,255,.25), rgba(255,93,205,.25));
+  border: 1px solid rgba(139,108,255,.4);
+  border-radius: 6px; padding: 1px 6px; font-size: 10px; font-weight: 700;
+}
+.stars-chip {
+  display:flex; align-items:center; gap:5px;
+  background: linear-gradient(135deg, rgba(255,203,69,.18), rgba(255,93,205,.12));
+  border: 1px solid rgba(255,203,69,.35);
+  padding: 7px 11px; border-radius: 999px;
+  font-weight: 700; font-size: 13px;
+}
+.stars-chip .icn { font-size: 14px; filter: drop-shadow(0 0 4px rgba(255,203,69,.6)); }
+
+/* ============================================================
+   PAGE TITLE
+   ============================================================ */
+.page-title {
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 14px 2px 12px;
+}
+.page-title h1 {
+  font-size: 24px; font-weight: 800; letter-spacing: -.5px;
+  background: linear-gradient(135deg, #fff, #cdb8ff 80%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.page-title .sub { color: var(--hint); font-size: 12px; margin-top: 2px; }
+
+/* ============================================================
+   BOXES (FARM)
+   ============================================================ */
+.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--hint); margin: 18px 2px 10px; font-weight: 600; }
+
+.box-list { display:flex; flex-direction:column; gap: 10px; }
+.box-card {
+  position: relative;
+  display:flex; align-items:center; gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: transform .15s, border-color .15s;
+}
+.box-card:active { transform: scale(.98); }
+.box-card::before {
+  content:''; position:absolute; inset:0; border-radius: inherit;
+  background: var(--g, linear-gradient(135deg, #8b6cff, #ff5dcd));
+  opacity: .14; pointer-events: none;
+  transition: opacity .2s;
+}
+.box-card::after {
+  content:''; position:absolute; inset:-2px; border-radius: inherit;
+  padding: 1.5px;
+  background: var(--g, linear-gradient(135deg, #8b6cff, #ff5dcd));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: .55; pointer-events:none;
+}
+.box-card .box-ico {
+  width: 56px; height: 56px; border-radius: 14px; flex-shrink:0;
+  background: var(--g, linear-gradient(135deg, #8b6cff, #ff5dcd));
+  display:flex; align-items:center; justify-content:center;
+  font-size: 28px;
+  box-shadow: 0 6px 20px var(--shadow, rgba(139,108,255,.4));
+  position: relative; overflow: hidden;
+}
+.box-card .box-ico::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shine 3s linear infinite;
+}
+@keyframes shine { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+.box-card .box-info { flex:1; min-width:0; position: relative; z-index: 1; }
+.box-card .box-name { font-weight: 700; font-size: 15px; }
+.box-card .box-meta { font-size: 12px; color: var(--hint); display:flex; gap: 8px; align-items:center; margin-top: 2px; }
+.box-card .box-cost {
+  background: linear-gradient(135deg, rgba(255,203,69,.2), rgba(255,93,205,.12));
+  border: 1px solid rgba(255,203,69,.35);
+  padding: 6px 12px; border-radius: 999px; font-weight: 700; font-size: 13px;
+  display:flex; align-items:center; gap:4px;
+  position: relative; z-index: 1;
+}
+
+/* ============================================================
+   FARM SLOTS
+   ============================================================ */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.slot {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--card);
+  border: 1.5px dashed var(--line-hi);
+  border-radius: 18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s, background .15s;
+  text-align:center;
+}
+.slot:active { transform: scale(.97); }
+.slot.empty { color: var(--hint); }
+.slot.empty:hover { border-color: var(--accent); background: var(--card-hi); }
+.slot.empty .plus { font-size: 32px; opacity:.5; line-height:1; }
+.slot.growing, .slot.ready {
+  border-style: solid;
+  background: var(--g, linear-gradient(135deg, rgba(139,108,255,.25), rgba(255,93,205,.15)));
+}
+.slot .ico { font-size: 38px; line-height: 1; margin-bottom: 4px; }
+.slot.growing .ico { animation: bob 1.5s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.slot.ready { animation: ready-pulse 1.6s ease-in-out infinite; }
+@keyframes ready-pulse { 0%,100%{box-shadow: 0 0 0 0 rgba(46,224,140,.6)} 50%{box-shadow: 0 0 0 10px rgba(46,224,140,0)} }
+.slot .timer { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); margin-top: 4px; }
+.slot .lbl { font-size: 11px; color: var(--hint); margin-top: 6px; }
+.slot.locked { opacity: .35; cursor: not-allowed; pointer-events: none; }
+
+/* ============================================================
+   GIFT CARDS (Inventory + Market)
+   ============================================================ */
+.search-bar {
+  display:flex; gap: 8px; align-items:center;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 10px 14px; margin-bottom: 10px;
+}
+.search-bar input {
+  flex:1; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 14px; font-family: inherit;
+}
+.search-bar input::placeholder { color: var(--hint); }
+.search-bar .icn { font-size: 16px; opacity: .6; }
+
+.toolbar { display:flex; gap: 6px; margin-bottom: 12px; overflow-x:auto; padding-bottom: 4px; }
+.toolbar::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 999px; padding: 7px 13px; font-size: 12px; font-weight: 600; color: var(--hint);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.chip:active { transform: scale(.96); }
+.chip.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent; color: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 420px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+.gift-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+  display:flex; flex-direction:column; align-items:center;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s, box-shadow .2s;
+  overflow: hidden;
+}
+.gift-card:active { transform: scale(.97); }
+.gift-card::before {
+  content:''; position:absolute; inset:0; border-radius: inherit;
+  background: var(--g, linear-gradient(160deg, rgba(139,108,255,.2), transparent 60%));
+  opacity: .8;
+  pointer-events:none;
+}
+.gift-card.premium { border-color: rgba(255,203,69,.45); box-shadow: 0 0 0 1px rgba(255,203,69,.25), 0 4px 24px rgba(255,203,69,.12); }
+.gift-card.premium::after {
+  content:''; position:absolute; inset:0; border-radius: inherit;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shine 3s linear infinite;
+  pointer-events:none;
+}
+.gift-card.elite::after {
+  animation-duration: 1.8s;
+}
+.gift-card .gift-ico {
+  position: relative;
+  width: 78px; height: 78px;
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom: 8px;
+}
+.gift-card .gift-ico img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.35));
+}
+.gift-card .gift-name {
+  position: relative;
+  font-size: 12.5px; font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+  margin-bottom: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+.gift-card .gift-price {
+  position: relative;
+  display:flex; align-items:center; gap: 4px;
+  background: linear-gradient(135deg, rgba(255,203,69,.18), rgba(255,93,205,.1));
+  border: 1px solid rgba(255,203,69,.35);
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+}
+.gift-card .my-tag {
+  position:absolute; top: 6px; right: 6px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 999px; padding: 2px 7px; font-size: 9px; font-weight: 800; letter-spacing: .5px;
+  z-index: 2;
+}
+.gift-card .listed-tag {
+  position:absolute; top: 6px; left: 6px;
+  background: rgba(46,224,140,.2); color: var(--green);
+  border: 1px solid rgba(46,224,140,.4);
+  border-radius: 999px; padding: 2px 7px; font-size: 9px; font-weight: 700;
+  z-index: 2;
+}
+.gift-card .seller { position:relative; font-size: 10px; color: var(--hint); margin-top: 4px; }
+
+.gift-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent), 0 4px 24px rgba(139,108,255,.35);
+}
+.gift-card .check {
+  position:absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent);
+  display:none; align-items:center; justify-content:center;
+  font-size: 14px; font-weight: 800; z-index: 2;
+}
+.gift-card.selected .check { display:flex; }
+.gift-card.selected .my-tag { display:none; }
+
+/* ============================================================
+   PROFILE / TOP
+   ============================================================ */
+.profile-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 18px; padding: 18px;
+  margin-bottom: 16px;
+  position:relative; overflow:hidden;
+}
+.profile-card::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(circle at 0% 0%, rgba(139,108,255,.2), transparent 60%);
+  pointer-events:none;
+}
+.profile-card .row { display:flex; align-items:center; gap: 14px; position:relative; }
+.profile-card .big-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  font-weight: 800; font-size: 22px;
+  border: 3px solid rgba(255,255,255,.15);
+}
+.profile-card .name { font-size: 18px; font-weight: 700; }
+.profile-card .rank { color: var(--hint); font-size: 12px; margin-top: 2px; }
+.profile-card .xp-track {
+  margin-top: 12px;
+  height: 6px; background: rgba(255,255,255,.08); border-radius: 999px; overflow:hidden;
+  position: relative;
+}
+.profile-card .xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: inherit;
+  transition: width .4s;
+}
+.profile-card .xp-text { font-size: 11px; color: var(--hint); margin-top: 6px; text-align: right; }
+
+.stat-row { display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 12px;
+  text-align:center;
+}
+.stat-card .v { font-size: 20px; font-weight: 800; }
+.stat-card .l { font-size: 10px; color: var(--hint); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+.top-list { display:flex; flex-direction:column; gap: 8px; }
+.top-row {
+  display:flex; align-items:center; gap: 12px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 10px 12px;
+}
+.top-row .pos { font-weight: 800; font-size: 14px; color: var(--hint); width: 24px; text-align:center; }
+.top-row.gold .pos { color: var(--gold); font-size: 18px; }
+.top-row.silver .pos { color: #cdd6e0; font-size: 16px; }
+.top-row.bronze .pos { color: #d49669; font-size: 16px; }
+.top-row .sm-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center;
+  font-size: 13px; font-weight: 700;
+}
+.top-row .nm { flex:1; font-weight: 600; font-size: 13px; }
+.top-row .lvl { font-size: 11px; color: var(--hint); }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; border: none; border-radius: 14px;
+  padding: 13px 18px; font-weight: 700; font-size: 14px;
+  cursor:pointer; transition: transform .15s, box-shadow .15s;
+  font-family: inherit; width: 100%;
+  box-shadow: 0 6px 20px rgba(139,108,255,.35);
+}
+.btn:active { transform: scale(.98); box-shadow: 0 3px 12px rgba(139,108,255,.4); }
+.btn:disabled { opacity: .5; cursor: not-allowed; box-shadow:none; }
+.btn-sec {
+  background: var(--card); border: 1px solid var(--line-hi); color: var(--text);
+  box-shadow: none;
+}
+.btn-sec:active { background: var(--card-hi); }
+.btn-danger { background: linear-gradient(135deg, #ff5269, #b8284b); box-shadow: 0 6px 20px rgba(255,82,105,.3); }
+.btn-gold { background: linear-gradient(135deg, var(--gold), #ff7e3a); box-shadow: 0 6px 20px rgba(255,203,69,.3); }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
+  display: none; align-items: flex-end; justify-content: center;
+}
+.modal-bg.open { display:flex; animation: fade .2s ease; }
+.modal {
+  width: 100%; max-width: 460px;
+  background: linear-gradient(180deg, #1a1638, #0f0c24);
+  border: 1px solid var(--line-hi); border-top-left-radius: 24px; border-top-right-radius: 24px;
+  padding: 22px 18px calc(22px + var(--safe-bottom));
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-grip { width: 40px; height: 4px; background: rgba(255,255,255,.2); border-radius: 999px; margin: -8px auto 14px; }
+.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; text-align:center; }
+.modal p { color: var(--hint); font-size: 13px; line-height: 1.5; text-align:center; }
+.modal .actions { display:flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+
+/* Reveal animation for new gift */
+.reveal {
+  text-align:center; padding: 12px 0 20px;
+}
+.reveal .ico-wrap {
+  width: 140px; height: 140px; margin: 0 auto 14px;
+  display:flex; align-items:center; justify-content:center;
+  position: relative;
+  animation: pop .6s cubic-bezier(.2,1.4,.4,1.1);
+}
+.reveal .ico-wrap::before {
+  content:''; position:absolute; inset: -20%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,203,69,.3), transparent 70%);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.reveal img { width: 110px; height: 110px; object-fit: contain; position:relative;
+  filter: drop-shadow(0 6px 22px rgba(255,203,69,.5)); }
+.reveal .nm { font-size: 22px; font-weight: 800; margin-bottom: 6px;
+  background: linear-gradient(135deg, #fff, #ffcb45); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.reveal .pr { color: var(--hint); font-size: 13px; }
+@keyframes pop { 0%{transform:scale(0); opacity:0;} 60%{transform:scale(1.15); opacity:1;} 100%{transform:scale(1);} }
+@keyframes glow-pulse { 0%,100%{transform:scale(1); opacity:.6} 50%{transform:scale(1.15); opacity:1} }
+
+.input {
+  width:100%; background: var(--card); border: 1px solid var(--line-hi);
+  border-radius: 12px; padding: 12px 14px; font-size: 15px; color: var(--text);
+  font-family: inherit; outline: none;
+  transition: border-color .15s;
+}
+.input:focus { border-color: var(--accent); }
+
+/* ============================================================
+   BOTTOM NAV
+   ============================================================ */
+.bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: rgba(7,6,15,.85);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-top: 1px solid var(--line);
+  padding: 6px 4px calc(6px + var(--safe-bottom));
+}
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; gap: 2px;
+  padding: 8px 4px; border-radius: 12px;
+  color: var(--hint); font-size: 10px; font-weight: 600;
+  cursor:pointer; transition: color .15s;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.nav-item .ico { font-size: 22px; line-height: 1; transition: transform .15s; }
+.nav-item.active { color: var(--text); }
+.nav-item.active .ico { transform: scale(1.1); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed; left: 50%; top: 70px; transform: translateX(-50%) translateY(-30px);
+  background: rgba(20,16,40,.95); border: 1px solid var(--line-hi);
+  border-radius: 12px; padding: 10px 16px;
+  font-size: 13px; font-weight: 600;
+  z-index: 200; opacity: 0; pointer-events: none;
+  backdrop-filter: blur(12px);
+  transition: opacity .25s, transform .25s;
+  max-width: 90%;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: rgba(255,82,105,.4); color: #ffafba; }
+.toast.success { border-color: rgba(46,224,140,.4); color: #b8f5d6; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty {
+  text-align:center; padding: 40px 20px; color: var(--hint);
+}
+.empty .em-ico { font-size: 56px; margin-bottom: 12px; opacity:.4; }
+.empty .em-text { font-size: 14px; }
+
+/* ============================================================
+   COMBINE BAR
+   ============================================================ */
+.combine-bar {
+  position: fixed; left: 14px; right: 14px; bottom: calc(86px + var(--safe-bottom));
+  background: linear-gradient(135deg, rgba(139,108,255,.95), rgba(255,93,205,.95));
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: none; align-items:center; justify-content:space-between; gap: 10px;
+  z-index: 40;
+  box-shadow: 0 6px 24px rgba(139,108,255,.4);
+  animation: slideUp .25s ease;
+}
+.combine-bar.show { display:flex; }
+.combine-bar .ct { font-weight: 700; font-size: 13px; }
+.combine-bar button {
+  background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.3);
+  color: #fff; border-radius: 10px; padding: 8px 14px;
+  font-weight: 700; font-size: 12px; cursor:pointer;
+  font-family: inherit;
+}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="avatar" id="hdr-avatar">?</div>
+    <div class="user-info">
+      <div class="user-name" id="hdr-name">…</div>
+      <div class="user-meta">
+        <span class="lvl-pill" id="hdr-lvl">LVL 1</span>
+        <span id="hdr-rank">Новичок</span>
+      </div>
+    </div>
+    <div class="stars-chip" id="hdr-stars"><span class="icn">⭐</span><span>0</span></div>
+  </div>
+
+  <div id="content">
+    <!-- ── FARM ─────────────────────────────────────────────── -->
+    <section class="tab active" data-tab="farm">
+      <div class="page-title">
+        <div>
+          <h1>Ферма</h1>
+          <div class="sub">Открывай боксы — получай Telegram NFT</div>
+        </div>
+        <button class="btn-sec chip" id="daily-btn" style="padding: 8px 12px;">🎁 Daily</button>
+      </div>
+
+      <div class="section-label">Твои слоты</div>
+      <div class="slot-grid" id="slot-grid"></div>
+
+      <div class="section-label">Боксы</div>
+      <div class="box-list" id="box-list"></div>
+    </section>
+
+    <!-- ── MARKET ───────────────────────────────────────────── -->
+    <section class="tab" data-tab="market">
+      <div class="page-title">
+        <div>
+          <h1>Маркет</h1>
+          <div class="sub" id="market-count">…</div>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <span class="icn">🔍</span>
+        <input id="market-search" placeholder="Найти по названию…">
+      </div>
+
+      <div class="toolbar">
+        <button class="chip active" data-sort="floor-asc">Дешевле</button>
+        <button class="chip" data-sort="floor-desc">Дороже</button>
+        <button class="chip" data-sort="newest">Новые</button>
+      </div>
+
+      <div class="grid" id="market-grid"></div>
+    </section>
+
+    <!-- ── INVENTORY ────────────────────────────────────────── -->
+    <section class="tab" data-tab="inventory">
+      <div class="page-title">
+        <div>
+          <h1>Инвентарь</h1>
+          <div class="sub" id="inv-count">…</div>
+        </div>
+        <button class="chip" id="combine-toggle">🔮 Объединить</button>
+      </div>
+
+      <div class="search-bar">
+        <span class="icn">🔍</span>
+        <input id="inv-search" placeholder="Найти по названию…">
+      </div>
+
+      <div class="grid" id="inv-grid"></div>
+    </section>
+
+    <!-- ── TOP ──────────────────────────────────────────────── -->
+    <section class="tab" data-tab="top">
+      <div class="page-title">
+        <div>
+          <h1>Профиль</h1>
+          <div class="sub">Твоя статистика и рейтинг</div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="row">
+          <div class="big-avatar" id="prof-avatar">?</div>
+          <div style="flex:1; min-width:0;">
+            <div class="name" id="prof-name">…</div>
+            <div class="rank" id="prof-rank">Новичок · LVL 1</div>
+          </div>
+        </div>
+        <div class="xp-track"><div class="xp-fill" id="prof-xp" style="width:0%"></div></div>
+        <div class="xp-text" id="prof-xp-text">0 / 100 XP</div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="v" id="prof-stars">0</div><div class="l">⭐ Звёзд</div></div>
+        <div class="stat-card"><div class="v" id="prof-gifts">0</div><div class="l">🎁 NFT</div></div>
+        <div class="stat-card"><div class="v" id="prof-spent">0</div><div class="l">💸 Потрачено</div></div>
+      </div>
+
+      <div class="section-label">🏆 Топ игроков</div>
+      <div class="top-list" id="top-list"></div>
+    </section>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" data-nav="farm"><span class="ico">🌱</span><span>Ферма</span></div>
+    <div class="nav-item" data-nav="market"><span class="ico">🛍</span><span>Маркет</span></div>
+    <div class="nav-item" data-nav="inventory"><span class="ico">🎒</span><span>NFT</span></div>
+    <div class="nav-item" data-nav="top"><span class="ico">🏆</span><span>Топ</span></div>
+  </nav>
+</div>
+
+<!-- COMBINE FLOATING BAR -->
+<div class="combine-bar" id="combine-bar">
+  <span class="ct">Выбрано <b id="cb-count">0</b>/3 NFT</span>
+  <div style="display:flex; gap:6px;">
+    <button id="cb-cancel">Отмена</button>
+    <button id="cb-go" style="background:#fff; color:#7b3aff;">Объединить</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" id="modal">
+    <div class="modal-grip"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//   STATE + HELPERS
+// ============================================================
+const tg = window.Telegram?.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+
+const tgUser = (tg?.initDataUnsafe?.user) || {
+  id: 999000 + Math.floor(Math.random() * 1000),
+  first_name: 'Гость',
+  username: 'guest',
+};
+const initData = tg?.initData || '';
+
+let user = null, gifts = [], listings = [], boxes = [];
+let activeTab = 'farm';
+let plantingSlotIndex = null;
+let combineMode = false;
+let combineSel = new Set();
+
+// Hash a string into a stable hue 0..360
+function hashHue(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
+  return Math.abs(h) % 360;
+}
+function gradientFor(slug) {
+  const h = hashHue(slug);
+  return `linear-gradient(160deg, hsl(${h} 80% 55% / .35), hsl(${(h+60)%360} 80% 55% / .15) 70%, transparent 100%)`;
+}
+function iconUrl(slug) { return `/icons/${slug}.webp`; }
+function escHTML(s) { return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function premiumClass(price) {
+  if (price >= 1000) return 'gift-card elite premium';
+  if (price >= 200)  return 'gift-card premium';
+  return 'gift-card';
+}
+
+function rankFor(level) {
+  if (level >= 50) return 'Легенда';
+  if (level >= 20) return 'Мастер';
+  if (level >= 10) return 'Знаток';
+  if (level >= 5)  return 'Ученик';
+  return 'Новичок';
+}
+
+function fmtTime(ms) {
+  if (ms <= 0) return 'Готово';
+  const s = Math.ceil(ms / 1000);
+  if (s < 60) return `${s}с`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}м ${s % 60}с`;
+  return `${Math.floor(m/60)}ч ${m % 60}м`;
+}
+
+// API wrapper
+async function api(path, body = null) {
+  const opts = {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', 'x-telegram-init-data': initData },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('/api' + path, opts);
+  return r.json();
+}
+
+// Toast
+let toastTm;
+function toast(msg, kind = '') {
+  const el = document.getElementById('toast');
+  el.className = 'toast show ' + kind;
+  el.textContent = msg;
+  clearTimeout(toastTm);
+  toastTm = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+function haptic(kind = 'light') {
+  try { tg?.HapticFeedback?.impactOccurred(kind); } catch(e){}
+}
+function hapticOk() { try { tg?.HapticFeedback?.notificationOccurred('success'); } catch(e){} }
+function hapticErr() { try { tg?.HapticFeedback?.notificationOccurred('error'); } catch(e){} }
+
+// Modal
+function openModal(html) {
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+}
+document.getElementById('modal-bg').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-bg') closeModal();
+});
+
+// ============================================================
+//   NAV
+// ============================================================
+document.querySelectorAll('.nav-item').forEach(it => {
+  it.addEventListener('click', () => {
+    haptic('light');
+    const tab = it.dataset.nav;
+    activeTab = tab;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.nav === tab));
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    if (tab === 'market') refreshMarket();
+    else if (tab === 'inventory') refreshInventory();
+    else if (tab === 'top') refreshTop();
+    else if (tab === 'farm') refreshFarm();
+  });
+});
+
+// ============================================================
+//   USER + HEADER
+// ============================================================
+async function initUser() {
+  const u = await api('/init', {
+    telegram_id: tgUser.id,
+    first_name: tgUser.first_name,
+    username: tgUser.username || '',
+  });
+  user = u;
+  paintHeader();
+}
+function paintHeader() {
+  if (!user) return;
+  const initial = (user.first_name || 'G')[0].toUpperCase();
+  document.getElementById('hdr-avatar').textContent = initial;
+  document.getElementById('hdr-name').textContent = user.first_name;
+  document.getElementById('hdr-lvl').textContent = `LVL ${user.level}`;
+  document.getElementById('hdr-rank').textContent = rankFor(user.level);
+  document.getElementById('hdr-stars').innerHTML = `<span class="icn">⭐</span><span>${user.stars.toLocaleString('en')}</span>`;
+}
+
+// ============================================================
+//   FARM
+// ============================================================
+async function refreshFarm() {
+  const r = await api(`/farm/${tgUser.id}`);
+  boxes = r.boxes;
+  renderBoxes();
+  renderSlots(r.slots, r.max_slots);
+  // Live timer tick
+  scheduleSlotTick(r.slots);
+}
+
+function renderBoxes() {
+  const html = boxes.map(b => {
+    const grad = `linear-gradient(135deg, ${b.gradient})`;
+    const [c1] = b.gradient.split(',');
+    return `
+      <div class="box-card" data-box="${b.key}" style="--g:${grad}; --shadow:${c1.trim()}66;">
+        <div class="box-ico">${b.icon}</div>
+        <div class="box-info">
+          <div class="box-name">${b.name}</div>
+          <div class="box-meta">⏱ ${b.growth_minutes}м · 💎 ${b.band[0]}–${b.band[1]} ⭐</div>
+        </div>
+        <div class="box-cost">⭐ ${b.cost}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('box-list').innerHTML = html;
+  document.querySelectorAll('.box-card').forEach(c => {
+    c.addEventListener('click', () => {
+      haptic('medium');
+      openBoxConfirm(c.dataset.box);
+    });
+  });
+}
+
+function openBoxConfirm(boxKey) {
+  const b = boxes.find(x => x.key === boxKey);
+  if (!b) return;
+  const html = `
+    <h3>${b.icon} ${escHTML(b.name)}</h3>
+    <p>Поместить в свободный слот? Бокс созреет за <b>${b.growth_minutes} мин</b>, после чего получишь NFT с floor от <b>${b.band[0]}</b> до <b>${b.band[1]}</b> ⭐.</p>
+    <div class="actions">
+      <button class="btn" id="confirm-plant">Купить за ⭐ ${b.cost}</button>
+      <button class="btn btn-sec" onclick="closeModal()">Отмена</button>
+    </div>`;
+  openModal(html);
+  document.getElementById('confirm-plant').onclick = () => plantBox(boxKey);
+}
+
+async function plantBox(boxKey) {
+  // Find first empty slot
+  const r = await api(`/farm/${tgUser.id}`);
+  const empty = r.slots.find(s => s.status === 'empty');
+  if (!empty) {
+    closeModal();
+    toast('Все слоты заняты', 'error'); hapticErr();
+    return;
+  }
+  const res = await api('/farm/plant', { telegram_id: tgUser.id, slot_index: empty.slot_index, box_key: boxKey });
+  if (!res.ok) { closeModal(); toast(res.error || 'Не вышло', 'error'); hapticErr(); return; }
+  closeModal();
+  hapticOk();
+  toast('🌱 Бокс посажен!', 'success');
+  await loadUser();
+  refreshFarm();
+}
+
+function renderSlots(slots, maxSlots) {
+  // Show all known slots + a couple of locked placeholders.
+  const html = slots.map(s => {
+    if (s.status === 'empty') {
+      return `<div class="slot empty" data-empty><span class="plus">+</span><div class="lbl">Открыть бокс</div></div>`;
+    }
+    const box = boxes.find(b => b.key === s.box_key);
+    const grad = box ? `linear-gradient(135deg, ${box.gradient})` : '';
+    const ready = Date.parse(s.ready_at) <= Date.now();
+    if (ready) {
+      return `<div class="slot ready" data-harvest="${s.slot_index}" style="--g:${grad}">
+        <div class="ico">🎉</div><div class="timer">Готово!</div><div class="lbl">${box?.name || ''}</div>
+      </div>`;
+    }
+    return `<div class="slot growing" data-ready="${s.ready_at}" style="--g:${grad}">
+      <div class="ico">${box?.icon || '📦'}</div>
+      <div class="timer" data-tm="${s.ready_at}">…</div>
+      <div class="lbl">${box?.name || ''}</div>
+    </div>`;
+  }).join('');
+  // Hint about locked future slots
+  const lockedExtras = Math.max(0, 6 - slots.length);
+  let lockHTML = '';
+  for (let i = 0; i < Math.min(lockedExtras, 3); i++) {
+    lockHTML += `<div class="slot empty locked"><span class="plus">🔒</span><div class="lbl">Откроется на LVL ${[3,7,15,30,60][slots.length+i] || '+'}</div></div>`;
+  }
+  document.getElementById('slot-grid').innerHTML = html + lockHTML;
+  document.querySelectorAll('[data-empty]').forEach(el => {
+    el.addEventListener('click', () => {
+      haptic('light');
+      // scroll to box list
+      document.getElementById('box-list').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+  document.querySelectorAll('[data-harvest]').forEach(el => {
+    el.addEventListener('click', () => harvest(el.dataset.harvest));
+  });
+}
+
+let slotTickTm;
+function scheduleSlotTick(slots) {
+  clearInterval(slotTickTm);
+  slotTickTm = setInterval(() => {
+    let needsRerender = false;
+    document.querySelectorAll('[data-tm]').forEach(el => {
+      const ms = Date.parse(el.dataset.tm) - Date.now();
+      el.textContent = fmtTime(ms);
+      if (ms <= 0) needsRerender = true;
+    });
+    if (needsRerender && activeTab === 'farm') refreshFarm();
+  }, 1000);
+}
+
+async function harvest(slotIndex) {
+  const res = await api('/farm/harvest', { telegram_id: tgUser.id, slot_index: Number(slotIndex) });
+  if (!res.ok) { toast(res.error || 'Не получилось', 'error'); hapticErr(); return; }
+  hapticOk();
+  showRevealModal(res.gift);
+  await loadUser();
+  refreshFarm();
+}
+
+function showRevealModal(gift) {
+  const slug = gift.slug;
+  const html = `
+    <div class="reveal">
+      <div class="ico-wrap"><img src="${iconUrl(slug)}" alt=""></div>
+      <div class="nm">${escHTML(gift.gift_name)}</div>
+      <div class="pr">Добавлено в твой инвентарь</div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="closeModal()">Забрать</button>
+    </div>`;
+  openModal(html);
+}
+
+// ============================================================
+//   MARKET
+// ============================================================
+let marketSort = 'floor-asc';
+let marketQuery = '';
+
+async function refreshMarket() {
+  const r = await api('/market');
+  listings = r.listings || [];
+  renderMarket();
+}
+function renderMarket() {
+  let arr = listings.slice();
+  if (marketQuery) {
+    const q = marketQuery.toLowerCase();
+    arr = arr.filter(l => l.gift_name.toLowerCase().includes(q));
+  }
+  if (marketSort === 'floor-asc') arr.sort((a,b)=>a.price-b.price);
+  else if (marketSort === 'floor-desc') arr.sort((a,b)=>b.price-a.price);
+  else arr.sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
+
+  document.getElementById('market-count').textContent = `${arr.length} активных лотов`;
+
+  if (!arr.length) {
+    document.getElementById('market-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="em-ico">🛒</div><div class="em-text">Лотов пока нет</div></div>`;
+    return;
+  }
+
+  const html = arr.map(l => {
+    const isMine = String(l.seller_tid) === String(tgUser.id);
+    return `
+      <div class="${premiumClass(l.price)}" data-listing="${l.id}" style="--g:${gradientFor(l.slug)}">
+        ${isMine ? '<div class="my-tag">МОЁ</div>' : ''}
+        <div class="gift-ico"><img src="${iconUrl(l.slug)}" alt="${escHTML(l.gift_name)}" loading="lazy"></div>
+        <div class="gift-name">${escHTML(l.gift_name)}</div>
+        <div class="gift-price">⭐ ${l.price.toLocaleString('en')}</div>
+        <div class="seller">${escHTML(l.seller_name || '')}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('market-grid').innerHTML = html;
+  document.querySelectorAll('#market-grid [data-listing]').forEach(c => {
+    c.addEventListener('click', () => openListingModal(Number(c.dataset.listing)));
+  });
+}
+function openListingModal(listingId) {
+  const l = listings.find(x => x.id === listingId);
+  if (!l) return;
+  const isMine = String(l.seller_tid) === String(tgUser.id);
+  haptic('light');
+  const html = `
+    <div class="reveal" style="padding-top:0">
+      <div class="ico-wrap"><img src="${iconUrl(l.slug)}"></div>
+      <div class="nm">${escHTML(l.gift_name)}</div>
+      <div class="pr">Продавец: ${escHTML(l.seller_name)}</div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin: 4px 0 14px;">
+      <span style="font-size:22px;">⭐</span><span style="font-size:24px; font-weight:800;">${l.price.toLocaleString('en')}</span>
+    </div>
+    <div class="actions">
+      ${isMine
+        ? `<button class="btn btn-danger" id="m-cancel">Снять с продажи</button>`
+        : `<button class="btn btn-gold" id="m-buy">Купить</button>`}
+      <button class="btn btn-sec" onclick="closeModal()">Закрыть</button>
+    </div>`;
+  openModal(html);
+  if (isMine) document.getElementById('m-cancel').onclick = () => cancelListing(listingId);
+  else document.getElementById('m-buy').onclick = () => buyListing(listingId);
+}
+async function buyListing(id) {
+  const res = await api('/market/buy', { telegram_id: tgUser.id, listing_id: id });
+  if (!res.ok) { toast(res.error || 'Не вышло', 'error'); hapticErr(); return; }
+  hapticOk();
+  closeModal();
+  toast('🎁 NFT твой!', 'success');
+  await loadUser();
+  refreshMarket();
+  if (activeTab === 'inventory') refreshInventory();
+}
+async function cancelListing(id) {
+  const res = await api('/market/cancel', { telegram_id: tgUser.id, listing_id: id });
+  if (!res.ok) { toast(res.error || 'Не вышло', 'error'); hapticErr(); return; }
+  closeModal();
+  hapticOk();
+  toast('Лот снят', 'success');
+  refreshMarket();
+  if (activeTab === 'inventory') refreshInventory();
+}
+document.querySelectorAll('.toolbar [data-sort]').forEach(c => {
+  c.addEventListener('click', () => {
+    haptic('light');
+    document.querySelectorAll('.toolbar [data-sort]').forEach(x => x.classList.toggle('active', x === c));
+    marketSort = c.dataset.sort;
+    renderMarket();
+  });
+});
+document.getElementById('market-search').addEventListener('input', (e) => {
+  marketQuery = e.target.value.trim();
+  renderMarket();
+});
+
+// ============================================================
+//   INVENTORY
+// ============================================================
+let invQuery = '';
+async function refreshInventory() {
+  const r = await api(`/gifts/${tgUser.id}`);
+  gifts = r.gifts || [];
+  renderInventory();
+}
+function renderInventory() {
+  let arr = gifts.slice();
+  if (invQuery) {
+    const q = invQuery.toLowerCase();
+    arr = arr.filter(g => g.gift_name.toLowerCase().includes(q));
+  }
+  document.getElementById('inv-count').textContent = `${arr.length} NFT в коллекции`;
+
+  if (!arr.length) {
+    document.getElementById('inv-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="em-ico">🎒</div><div class="em-text">Открой первый бокс на ферме!</div></div>`;
+    return;
+  }
+
+  // Sort: most expensive first (by floor price from our catalog map)
+  arr.sort((a,b)=>(catalogFloor(b.slug)||0)-(catalogFloor(a.slug)||0));
+
+  const html = arr.map(g => {
+    const fp = catalogFloor(g.slug) || 0;
+    const isSel = combineSel.has(g.id);
+    return `
+      <div class="${premiumClass(fp)} ${isSel ? 'selected' : ''}" data-gift="${g.id}" style="--g:${gradientFor(g.slug)}">
+        <div class="check">✓</div>
+        <div class="gift-ico"><img src="${iconUrl(g.slug)}" loading="lazy"></div>
+        <div class="gift-name">${escHTML(g.gift_name)}</div>
+        <div class="gift-price">⭐ ~${fp.toLocaleString('en')}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('inv-grid').innerHTML = html;
+  document.querySelectorAll('#inv-grid [data-gift]').forEach(c => {
+    c.addEventListener('click', () => onInvCardClick(Number(c.dataset.gift)));
+  });
+}
+function onInvCardClick(id) {
+  if (combineMode) {
+    haptic('light');
+    if (combineSel.has(id)) combineSel.delete(id);
+    else if (combineSel.size < 3) combineSel.add(id);
+    renderInventory();
+    updateCombineBar();
+    return;
+  }
+  const g = gifts.find(x => x.id === id);
+  if (!g) return;
+  haptic('light');
+  const fp = catalogFloor(g.slug) || 0;
+  const html = `
+    <div class="reveal" style="padding-top:0">
+      <div class="ico-wrap"><img src="${iconUrl(g.slug)}"></div>
+      <div class="nm">${escHTML(g.gift_name)}</div>
+      <div class="pr">Floor ≈ ⭐ ${fp.toLocaleString('en')}</div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span style="font-size:13px; color:var(--hint);">Цена:</span>
+        <input class="input" id="sell-price" type="number" min="1" value="${fp}" style="flex:1;">
+        <span style="font-weight:700;">⭐</span>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:14px;">
+      <button class="btn btn-gold" id="sell-go">Выставить на продажу</button>
+      <button class="btn btn-sec" onclick="closeModal()">Закрыть</button>
+    </div>`;
+  openModal(html);
+  document.getElementById('sell-go').onclick = async () => {
+    const price = Number(document.getElementById('sell-price').value);
+    if (!price || price < 1) { toast('Цена > 0', 'error'); hapticErr(); return; }
+    const res = await api('/market/list', { telegram_id: tgUser.id, gift_id: id, price });
+    if (!res.ok) { toast(res.error || 'Не вышло', 'error'); hapticErr(); return; }
+    hapticOk();
+    closeModal();
+    toast('Лот выставлен!', 'success');
+    refreshInventory();
+    refreshMarket();
+  };
+}
+
+// catalog cache for floor lookup
+let CATALOG = [];
+function catalogFloor(slug) {
+  const g = CATALOG.find(x => x.slug === slug);
+  return g ? g.floor : 0;
+}
+async function loadCatalog() {
+  const r = await api('/catalog');
+  CATALOG = r.gifts || [];
+}
+
+document.getElementById('inv-search').addEventListener('input', (e) => {
+  invQuery = e.target.value.trim();
+  renderInventory();
+});
+
+// COMBINE
+const combineToggle = document.getElementById('combine-toggle');
+combineToggle.addEventListener('click', () => {
+  haptic('light');
+  combineMode = !combineMode;
+  combineSel.clear();
+  combineToggle.textContent = combineMode ? '✕ Выйти' : '🔮 Объединить';
+  combineToggle.classList.toggle('active', combineMode);
+  updateCombineBar();
+  renderInventory();
+});
+function updateCombineBar() {
+  const bar = document.getElementById('combine-bar');
+  document.getElementById('cb-count').textContent = combineSel.size;
+  bar.classList.toggle('show', combineMode && combineSel.size > 0);
+}
+document.getElementById('cb-cancel').onclick = () => {
+  combineSel.clear();
+  combineMode = false;
+  combineToggle.textContent = '🔮 Объединить';
+  combineToggle.classList.remove('active');
+  renderInventory();
+  updateCombineBar();
+};
+document.getElementById('cb-go').onclick = async () => {
+  if (combineSel.size !== 3) { toast('Нужно ровно 3 NFT', 'error'); hapticErr(); return; }
+  const res = await api('/combine', { telegram_id: tgUser.id, gift_ids: [...combineSel] });
+  if (!res.ok) { toast(res.error || 'Не вышло', 'error'); hapticErr(); return; }
+  hapticOk();
+  combineSel.clear(); combineMode = false;
+  combineToggle.textContent = '🔮 Объединить'; combineToggle.classList.remove('active');
+  updateCombineBar();
+  showRevealModal(res.gift);
+  await loadUser();
+  refreshInventory();
+};
+
+// ============================================================
+//   TOP / PROFILE
+// ============================================================
+async function refreshTop() {
+  await loadUser();
+  const r = await api('/leaderboard');
+  paintProfile();
+  renderLeaderboard(r.top || []);
+}
+function paintProfile() {
+  if (!user) return;
+  const initial = (user.first_name || 'G')[0].toUpperCase();
+  document.getElementById('prof-avatar').textContent = initial;
+  document.getElementById('prof-name').textContent = user.first_name;
+  document.getElementById('prof-rank').textContent = `${rankFor(user.level)} · LVL ${user.level}`;
+  const pct = Math.min(100, Math.round((user.xp / user.xp_needed) * 100));
+  document.getElementById('prof-xp').style.width = pct + '%';
+  document.getElementById('prof-xp-text').textContent = `${user.xp} / ${user.xp_needed} XP`;
+  document.getElementById('prof-stars').textContent = user.stars.toLocaleString('en');
+  document.getElementById('prof-gifts').textContent = user.gift_count;
+  document.getElementById('prof-spent').textContent = (user.stars_spent || 0).toLocaleString('en');
+}
+function renderLeaderboard(arr) {
+  if (!arr.length) {
+    document.getElementById('top-list').innerHTML = `<div class="empty"><div class="em-ico">🏆</div><div class="em-text">Пока пусто</div></div>`;
+    return;
+  }
+  const html = arr.map((u, i) => {
+    const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const ini = (u.first_name || '?')[0].toUpperCase();
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+    return `<div class="top-row ${cls}">
+      <div class="pos">${medal}</div>
+      <div class="sm-avatar">${ini}</div>
+      <div class="nm">${escHTML(u.first_name)}</div>
+      <div class="lvl">LVL ${u.level} · ${u.gift_count} NFT</div>
+    </div>`;
+  }).join('');
+  document.getElementById('top-list').innerHTML = html;
+}
+
+// ============================================================
+//   DAILY
+// ============================================================
+document.getElementById('daily-btn').addEventListener('click', async () => {
+  haptic('medium');
+  const res = await api('/daily', { telegram_id: tgUser.id });
+  if (res.ok) { hapticOk(); toast(res.message, 'success'); await loadUser(); }
+  else { hapticErr(); toast(res.message, 'error'); }
+});
+
+async function loadUser() {
+  const r = await api(`/user/${tgUser.id}`);
+  if (!r.error) { user = r; paintHeader(); }
+}
+
+// ============================================================
+//   BOOT
+// ============================================================
+(async function boot() {
+  await initUser();
+  await loadCatalog();
+  await refreshFarm();
+})();
+
+</script>
+</body>
+</html>

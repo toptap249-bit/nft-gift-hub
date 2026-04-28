@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.env
+.DS_Store
+tunnel.log
+backend/data.json
+cloudflared.exe
+ngrok.exe
+_run_tunnel.bat

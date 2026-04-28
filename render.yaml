@@ -1,0 +1,22 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# При деплое через "New → Blueprint" Render прочитает этот файл
+# и создаст сервис со всеми нужными настройками автоматически.
+
+services:
+  - type: web
+    name: nft-gift-hub
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Токен бота. Заполни вручную в Render Dashboard
+      # после первого деплоя — sync: false означает "не показывать в blueprint
+      # PR; задаётся через UI/CLI".
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      # WEBAPP_URL подхватится автоматически из RENDER_EXTERNAL_URL —
+      # его выставлять не надо.
